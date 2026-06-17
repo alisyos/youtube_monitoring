@@ -35,6 +35,16 @@
       "prompt_file": "prompt_20260423.txt",
       "enabled": true,
       "collect_enabled": true
+    },
+    {
+      "id": "A2z34f1yiw8_20260617",
+      "tab_label": "언더스탠딩",
+      "video_title": "현대차에 숨겨진 100조원의 가치 (한동대학교 김학주 교수)",
+      "video_url": "https://www.youtube.com/watch?v=A2z34f1yiw8",
+      "start_date": "20260617",
+      "video_start_at": "2026-06-17 13:20:40",
+      "enabled": true,
+      "collect_enabled": true
     }
   ]
 }
