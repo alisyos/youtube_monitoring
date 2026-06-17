@@ -7,6 +7,9 @@ on:
   repository_dispatch:      # 대시보드 "수동 업데이트" 버튼(/api/deploy)에서 외부 트리거
     types: [manual-deploy]
 
+permissions:
+  contents: write           # github-actions[bot]이 수집 결과 CSV를 커밋·push할 수 있도록 허용
+
 jobs:
   update-dashboard-data:
     runs-on: ubuntu-latest
