@@ -732,14 +732,51 @@
                 white-space: normal;
             }
         }
+
+        .hero-panel.has-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .hero-panel.has-actions .hero-title {
+            margin-bottom: 0;
+        }
+
+        .btn-refresh {
+            flex: none;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            color: white;
+            padding: 9px 18px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .btn-refresh:disabled {
+            opacity: 0.7;
+            cursor: default;
+        }
     </style>
 </head>
 
 <body>
     <div class="page-shell">
         <header class="hero">
-            <div class="hero-panel">
+            <div class="hero-panel has-actions">
                 <div class="hero-title" id="dashboardTitle">국민연금 이사장 유튜브 여론 모니터링</div>
+                <button id="manualDeployBtn" class="btn-refresh" type="button">수동 업데이트</button>
             </div>
         </header>
 
@@ -1630,6 +1667,24 @@
                 });
             });
         }
+
+        async function handleManualDeploy() {
+            const btn = document.getElementById('manualDeployBtn');
+            btn.disabled = true;
+            btn.innerText = '업데이트 요청 중…';
+            try {
+                const res = await fetch('/api/deploy', { method: 'POST' });
+                if (!res.ok) throw new Error(await res.text());
+                btn.innerText = '요청됨 ✓ (1~2분 후 반영)';
+            } catch (error) {
+                console.error(error);
+                btn.innerText = '요청 실패';
+            } finally {
+                setTimeout(() => { btn.innerText = '수동 업데이트'; btn.disabled = false; }, 4000);
+            }
+        }
+
+        document.getElementById('manualDeployBtn').addEventListener('click', handleManualDeploy);
 
         loadDashboard();
     </script>

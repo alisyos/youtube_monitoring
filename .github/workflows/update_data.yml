@@ -1,12 +1,11 @@
 name: Auto Update YouTube PR Data
 
 on:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: '*/15 * * * *'  # 15분마다 실행 (Vercel 자동 재배포 일일 한도 고려)
+    - cron: '0 * * * *'     # 매시 정각 1회 실행 (자동배포 주기)
   workflow_dispatch:        # GitHub에서 수동 버튼 클릭으로도 실행 가능
+  repository_dispatch:      # 대시보드 "수동 업데이트" 버튼(/api/deploy)에서 외부 트리거
+    types: [manual-deploy]
 
 jobs:
   update-dashboard-data:

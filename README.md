@@ -1,8 +1,11 @@
 # 국민연금 이사장 유튜브 여론 모니터링 대시보드
 
-**🔗 [실시간 대시보드 바로가기](https://roy8in.github.io/youtube-comment-monitoring/)**
+**🔗 [실시간 대시보드 바로가기](https://youtube-comment-monitoring-main.vercel.app)**
 
 여러 개의 유튜브 영상을 한 번에 추적하고, 새 댓글만 AI로 분석해 대표 페이지와 영상별 탭 대시보드로 보여주는 정적 모니터링 시스템입니다.
+
+- 저장소: [github.com/alisyos/youtube_monitoring](https://github.com/alisyos/youtube_monitoring)
+- 호스팅: Vercel (GitHub 연동 자동 배포)
 
 ## 주요 구성
 
@@ -13,7 +16,7 @@
 
 ## 설정 파일 구조
 
-모든 영상 메타데이터는 [dashboard_config.json](/Users/binmoojin/work/youtube-comment-monitoring/dashboard_config.json)에서 관리합니다.
+모든 영상 메타데이터는 [dashboard_config.json](dashboard_config.json)에서 관리합니다.
 
 ```json
 {
@@ -50,7 +53,7 @@
 
 ## 새 영상 추가 방법
 
-1. [dashboard_config.json](/Users/binmoojin/work/youtube-comment-monitoring/dashboard_config.json)에 `reports` 항목을 추가합니다.
+1. [dashboard_config.json](dashboard_config.json)에 `reports` 항목을 추가합니다.
 2. 아래 값을 채웁니다.
    - `video_url`
    - `tab_label`
@@ -70,7 +73,13 @@
 
 ## GitHub Actions 동작 방식
 
-[.github/workflows/update_data.yml](/Users/binmoojin/work/youtube-comment-monitoring/.github/workflows/update_data.yml)은 정해진 주기마다 [update_job.py](/Users/binmoojin/work/youtube-comment-monitoring/update_job.py)를 실행합니다.
+[.github/workflows/update_data.yml](.github/workflows/update_data.yml)은 정해진 주기마다 [update_job.py](update_job.py)를 실행합니다.
+
+워크플로는 세 가지 방식으로 실행됩니다.
+
+- **매시 정각 자동 실행** (`schedule: 0 * * * *`) — 1시간에 1번 데이터 수집·배포
+- **수동 실행** — GitHub Actions 탭의 `Run workflow` 버튼(`workflow_dispatch`)
+- **대시보드 버튼** — 페이지의 "수동 업데이트" 버튼이 `repository_dispatch`로 즉시 트리거
 
 실행 흐름은 아래와 같습니다.
 
@@ -98,9 +107,22 @@ python update_job.py
 python reanalyze_existing_comments.py --report-id sampro_ceo_ep1_20260423
 ```
 
-## 필요한 시크릿
+## 배포 및 수동 업데이트
 
-GitHub Actions와 로컬 실행 모두 아래 값이 필요합니다.
+- **호스팅**: Vercel이 GitHub `main` 브랜치에 연동되어 있어 push가 있을 때마다 자동 재배포됩니다. 정적 파일(`index.html`, CSV, `dashboard_config.json`)을 그대로 서빙합니다.
+- **자동 갱신 주기**: GitHub Actions가 매시 정각(1시간 1회) 데이터를 수집·커밋하면 그 push로 Vercel이 재배포됩니다.
+- **수동 업데이트 버튼**: 대시보드 우측 상단의 "수동 업데이트" 버튼을 누르면 [api/deploy.js](api/deploy.js) 서버리스 함수가 GitHub `repository_dispatch`(`manual-deploy`)를 호출해 수집 워크플로를 즉시 실행합니다. 수집·분석에는 보통 1~2분이 걸리며, 완료 후 페이지를 새로고침하면 반영됩니다.
+
+```
+[수동 업데이트] 클릭 → /api/deploy → GitHub repository_dispatch
+  → Actions(수집·분석·커밋) → push → Vercel 재배포
+```
+
+## 필요한 시크릿 / 환경변수
+
+### GitHub Actions (repo Settings → Secrets and variables → Actions)
+
+데이터 수집에 필요합니다(로컬 실행도 동일).
 
 - `YOUTUBE_API_KEY`
 - `OPENROUTER_API_KEY`
@@ -110,6 +132,15 @@ GitHub Actions와 로컬 실행 모두 아래 값이 필요합니다.
 - `OPENROUTER_MODEL`
 - `OPENROUTER_BATCH_SIZE`
 - `OPENROUTER_TIMEOUT`
+
+### Vercel 환경변수 (수동 업데이트 버튼용)
+
+`api/deploy.js`가 GitHub 워크플로를 트리거할 때 사용합니다.
+
+- `GH_DISPATCH_TOKEN` — GitHub Personal Access Token. classic은 `repo` 스코프, fine-grained는 대상 저장소의 `Contents: Read and write` 권한 필요.
+- `GH_REPO` *(선택)* — 기본값 `alisyos/youtube_monitoring`.
+
+설정 예: `vercel env add GH_DISPATCH_TOKEN production`
 
 ## 참고
 
