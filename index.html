@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국민연금 이사장 유튜브 여론 모니터링</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        :root {
+            --bg: #f3f5f8;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+            --line: #dde4ee;
+            --primary: #185abd;
+            --primary-soft: #eaf2ff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --positive: #16a34a;
+            --negative: #dc2626;
+            --neutral: #94a3b8;
+            --other: #a855f7;
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at top right, #e4eefc, transparent 30%), var(--bg);
+            color: var(--text);
+            font-family: 'Pretendard', sans-serif;
+            padding-bottom: 48px;
+        }
+
+        .page-shell {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            padding: 20px 0 12px;
+        }
+
+        .hero-panel {
+            background: linear-gradient(135deg, #103f87, #1f67d2);
+            color: white;
+            border-radius: 28px;
+            padding: 20px 24px;
+            box-shadow: 0 22px 45px rgba(16, 63, 135, 0.18);
+        }
+
+        .hero-title {
+            font-size: clamp(1.9rem, 3vw, 2.7rem);
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .hero-subtitle {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.84);
+            font-size: 1rem;
+        }
+
+        .nav-wrap {
+            margin: 22px 0 24px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-tab {
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.86);
+            border-radius: 999px;
+            padding: 10px 18px;
+            color: var(--text);
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .dashboard-tab:hover {
+            background: white;
+            border-color: #bfd2f2;
+        }
+
+        .dashboard-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 12px 24px rgba(24, 90, 189, 0.22);
+        }
+
+        .card-panel {
+            background: var(--surface);
+            border: 1px solid rgba(221, 228, 238, 0.8);
+            border-radius: 24px;
+            box-shadow: 0 16px 34px rgba(22, 35, 54, 0.06);
+            margin-bottom: 22px;
+        }
+
+        .panel-header {
+            padding: 20px 24px 0;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .panel-subtitle {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .panel-body {
+            padding: 20px 24px 24px;
+        }
+
+        .metric-card {
+            background: linear-gradient(180deg, var(--surface), var(--surface-soft));
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+            height: 100%;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .metric-footnote {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .overview-toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .overview-toolbar-copy {
+            max-width: 560px;
+        }
+
+        .overview-toolbar-copy .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .overview-toolbar-title {
+            margin: 8px 0 6px;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .overview-toolbar-text {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .compare-selector {
+            min-width: 290px;
+            flex: 1 1 320px;
+            background: linear-gradient(180deg, #fbfdff, #f6f9fe);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 16px;
+        }
+
+        .compare-selector-title {
+            margin: 0 0 4px;
+            font-size: 0.98rem;
+            font-weight: 800;
+        }
+
+        .compare-selector-copy {
+            margin: 0 0 12px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
+        .compare-chip-wrap {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .compare-chip {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--text);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .compare-chip:hover {
+            border-color: #bfd2f2;
+            background: #f8fbff;
+        }
+
+        .compare-chip.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 10px 20px rgba(24, 90, 189, 0.18);
+        }
+
+        .compare-selector-note {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .overview-list-card {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .overview-list-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .overview-list-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .overview-list-title {
+            font-size: 1rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .overview-list-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 14px;
+        }
+
+        .overview-list-meta .meta-label {
+            color: var(--muted);
+            font-size: 0.77rem;
+            margin-bottom: 4px;
+        }
+
+        .overview-list-meta .meta-value {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .executive-note {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+            height: 100%;
+        }
+
+        .executive-note-title {
+            margin: 0 0 6px;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .executive-note-copy {
+            margin: 0 0 14px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
+        .executive-note-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .executive-note-item {
+            padding-top: 10px;
+            border-top: 1px solid rgba(221, 228, 238, 0.8);
+        }
+
+        .executive-note-item:first-child {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .executive-note-label {
+            color: var(--muted);
+            font-size: 0.76rem;
+            margin-bottom: 4px;
+        }
+
+        .executive-note-value {
+            font-size: 0.94rem;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .overview-list-table tbody tr {
+            cursor: pointer;
+        }
+
+        .overview-list-table tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .video-summary-card {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 18px;
+            height: 100%;
+        }
+
+        .badge-soft {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .meta-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .meta-line {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .meta-line strong {
+            color: var(--text);
+            margin-right: 6px;
+        }
+
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-container.short {
+            height: 320px;
+        }
+
+        .chart-container.category-overview-chart {
+            height: 560px;
+        }
+
+        .empty-msg {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .detail-hero {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .detail-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .video-link {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .video-link:hover {
+            text-decoration: underline;
+        }
+
+        .table-wrap {
+            max-height: 620px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            border-top: 1px solid rgba(221, 228, 238, 0.8);
+        }
+
+        .detail-data-table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .detail-data-table td,
+        .detail-data-table th {
+            vertical-align: top;
+        }
+
+        .detail-data-table .col-sentiment {
+            width: 108px;
+        }
+
+        .detail-data-table .col-category {
+            width: 118px;
+        }
+
+        .detail-data-table .col-keyword {
+            width: 118px;
+        }
+
+        .detail-data-table .comment-cell {
+            white-space: normal;
+            word-break: break-word;
+            line-height: 1.45;
+        }
+
+        .table thead {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            z-index: 1;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th.sortable:hover {
+            background: #eef3f9;
+        }
+
+        .sort-icon {
+            font-size: 0.8rem;
+            color: #9aa4b2;
+            margin-left: 5px;
+        }
+
+        .sentiment-badge {
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .sentiment-positive {
+            background: rgba(0, 204, 150, 0.12);
+            color: var(--positive);
+        }
+
+        .sentiment-negative {
+            background: rgba(239, 85, 59, 0.12);
+            color: var(--negative);
+        }
+
+        .sentiment-neutral {
+            background: rgba(99, 110, 250, 0.12);
+            color: var(--neutral);
+        }
+
+        .sentiment-other {
+            background: rgba(168, 85, 247, 0.12);
+            color: var(--other);
+        }
+
+        .footer {
+            margin-top: 28px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .footer ul {
+            padding-left: 18px;
+            margin-bottom: 0;
+        }
+
+        .d-none {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .page-shell {
+                padding: 0 12px;
+            }
+
+            .hero-panel {
+                padding: 14px 16px;
+                border-radius: 18px;
+            }
+
+            .hero-title {
+                font-size: 1.45rem;
+                margin-bottom: 6px;
+            }
+
+            .hero-subtitle {
+                font-size: 0.92rem;
+                line-height: 1.5;
+            }
+
+            .nav-wrap {
+                margin: 16px 0 18px;
+                gap: 8px;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                scrollbar-width: none;
+            }
+
+            .nav-wrap::-webkit-scrollbar {
+                display: none;
+            }
+
+            .dashboard-tab {
+                flex: 0 0 auto;
+                padding: 9px 14px;
+                font-size: 0.92rem;
+                white-space: nowrap;
+            }
+
+            .card-panel {
+                border-radius: 18px;
+                margin-bottom: 16px;
+            }
+
+            .panel-header,
+            .panel-body {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+
+            .panel-header {
+                padding-top: 16px;
+            }
+
+            .panel-title {
+                font-size: 1rem;
+            }
+
+            .panel-subtitle {
+                font-size: 0.86rem;
+                line-height: 1.45;
+            }
+
+            .metric-card {
+                border-radius: 16px;
+                padding: 14px;
+            }
+
+            .metric-label {
+                font-size: 0.82rem;
+            }
+
+            .metric-value {
+                font-size: 1.28rem;
+            }
+
+            .metric-footnote {
+                font-size: 0.78rem;
+            }
+
+            .overview-toolbar {
+                margin-bottom: 14px;
+            }
+
+            .overview-toolbar-title {
+                font-size: 1.05rem;
+            }
+
+            .overview-toolbar-text,
+            .compare-selector-copy {
+                font-size: 0.86rem;
+            }
+
+            .compare-selector {
+                min-width: 100%;
+                border-radius: 16px;
+                padding: 14px;
+            }
+
+            .compare-chip {
+                font-size: 0.8rem;
+                padding: 7px 10px;
+            }
+
+            .overview-list-card {
+                border-radius: 16px;
+                padding: 14px;
+            }
+
+            .overview-list-meta {
+                gap: 10px;
+            }
+
+            .executive-note {
+                border-radius: 16px;
+                padding: 14px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .video-summary-card {
+                border-radius: 18px;
+                padding: 14px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .chart-container.short {
+                height: 220px;
+            }
+
+            .chart-container.category-overview-chart {
+                height: 760px;
+            }
+
+            .detail-title {
+                font-size: 1.15rem;
+                line-height: 1.45;
+            }
+
+            .meta-line {
+                font-size: 0.88rem;
+            }
+
+            .badge-soft {
+                font-size: 0.77rem;
+                padding: 5px 9px;
+            }
+
+            .table-wrap {
+                display: block;
+                max-height: 520px;
+            }
+
+            .detail-data-table {
+                width: 100%;
+                table-layout: fixed;
+            }
+
+            .detail-data-table td,
+            .detail-data-table th {
+                font-size: 0.84rem;
+                padding: 10px 8px;
+            }
+
+            .detail-data-table .col-sentiment {
+                width: 70px;
+            }
+
+            .detail-data-table .col-category {
+                width: 78px;
+            }
+
+            .detail-data-table .col-keyword {
+                width: 78px;
+            }
+
+            .detail-data-table .comment-cell {
+                line-height: 1.4;
+                white-space: normal;
+                word-break: break-word;
+            }
+
+            .sentiment-badge {
+                min-width: 46px;
+                font-size: 0.72rem;
+                padding: 4px 6px;
+            }
+
+            .detail-data-table .badge {
+                font-size: 0.72rem;
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-shell">
+        <header class="hero">
+            <div class="hero-panel">
+                <div class="hero-title" id="dashboardTitle">국민연금 이사장 유튜브 여론 모니터링</div>
+            </div>
+        </header>
+
+        <nav class="nav-wrap" id="tabsContainer"></nav>
+
+        <section id="overviewSection"></section>
+        <section id="detailSection" class="d-none"></section>
+
+        <footer class="footer">
+            <div class="card-panel">
+                <div class="panel-body">
+                    <div class="fw-bold text-dark mb-2">면책조항</div>
+                    <ul>
+                        <li>본 대시보드의 수치는 유튜브 API 수집 시점 기준이며, 실제 서비스 화면과 차이가 있을 수 있습니다.</li>
+                        <li>댓글 감성 및 주제 분류 결과는 AI 자동 분석 결과로, 실제 작성자의 의도와 다를 수 있습니다.</li>
+                        <li>분석 결과는 참고용이며, 정책 판단이나 대외 커뮤니케이션에는 추가 검토가 필요합니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const configOptions = { responsive: true, displayModeBar: false };
+        const colorMap = { '긍정': '#16A34A', '부정': '#DC2626', '중립': '#94A3B8' };
+        const sentimentOrder = ['긍정', '부정', '중립'];
+        const categoryOrder = ['국민연금 조직', '운용성과', '투자전략', '연금제도', '퇴직연금', '세대형평', '정부개입·거버넌스', '지역발전', '기타'];
+        const categoryAliasMap = {
+            '국민연금 조직': '국민연금 조직',
+            '운용성과': '운용성과',
+            '기금수익': '운용성과',
+            '투자전략': '투자전략',
+            '국내주식': '투자전략',
+            '해외투자': '투자전략',
+            '주택투자': '투자전략',
+            '연금제도': '연금제도',
+            '퇴직연금': '퇴직연금',
+            '세대형평': '세대형평',
+            '정부개입': '정부개입·거버넌스',
+            '주주권행사': '정부개입·거버넌스',
+            '정부개입·거버넌스': '정부개입·거버넌스',
+            '지역발전': '지역발전',
+            '전북금융생태계': '지역발전',
+            '기타': '기타'
+        };
+        const isMobile = window.innerWidth < 768;
+        const chartFontSize = isMobile ? 11 : 12;
+        const appState = { config: null, reports: [], bundles: new Map(), activeTab: 'overview', overviewCompareIds: [] };
+
+        function formatNumber(value) {
+            const number = Number(value || 0);
+            return Number.isFinite(number) ? number.toLocaleString() : '-';
+        }
+
+        function formatDateTime(value) {
+            return value || '-';
+        }
+
+        function formatDateOnly(value) {
+            if (!value) return '-';
+            const text = String(value).trim();
+            return text.length >= 10 ? text.slice(0, 10) : text;
+        }
+
+        function getSortedBundles() {
+            return Array.from(appState.bundles.values()).sort((bundleA, bundleB) => {
+                const valueA = bundleA.report.video_start_at || bundleA.report.start_date || '';
+                const valueB = bundleB.report.video_start_at || bundleB.report.start_date || '';
+                return valueB.localeCompare(valueA);
+            });
+        }
+
+        function getSentimentClass(sentiment) {
+            if (sentiment === '긍정') return 'sentiment-positive';
+            if (sentiment === '부정') return 'sentiment-negative';
+            return 'sentiment-neutral';
+        }
+
+        function normalizeSentiment(sentiment) {
+            if (sentimentOrder.includes(sentiment)) return sentiment;
+            if (sentiment === '광고') return null;
+            return '중립';
+        }
+
+        function normalizeCategory(category) {
+            const value = (category || '').trim();
+            return categoryAliasMap[value] || '기타';
+        }
+
+        function sortCategories(categories) {
+            return [...categories].sort((a, b) => {
+                const indexA = categoryOrder.indexOf(a);
+                const indexB = categoryOrder.indexOf(b);
+                const orderA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+                const orderB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+                return orderA - orderB || a.localeCompare(b, 'ko');
+            });
+        }
+
+        function getAxisName(prefix, index) {
+            return index === 0 ? prefix : `${prefix}${index + 1}`;
+        }
+
+        function safeText(value) {
+            return value ? String(value) : '-';
+        }
+
+        function initializeOverviewCompareIds() {
+            const sorted = getSortedBundles();
+            appState.overviewCompareIds = sorted.slice(0, Math.min(3, sorted.length)).map(bundle => bundle.report.id);
+        }
+
+        function getSelectedOverviewBundles() {
+            const selected = appState.overviewCompareIds
+                .map(id => appState.bundles.get(id))
+                .filter(Boolean);
+
+            return selected.length ? selected : getSortedBundles().slice(0, Math.min(3, appState.bundles.size));
+        }
+
+        function toggleOverviewCompareId(reportId) {
+            const next = new Set(appState.overviewCompareIds);
+            if (next.has(reportId)) {
+                if (next.size === 1) return;
+                next.delete(reportId);
+            } else {
+                if (next.size >= 4) return;
+                next.add(reportId);
+            }
+            appState.overviewCompareIds = getSortedBundles()
+                .map(bundle => bundle.report.id)
+                .filter(id => next.has(id));
+            renderOverview();
+        }
+
+        function getExecutiveInsights(selectedBundles, bundles) {
+            const latestBundle = bundles[0] || null;
+            const highestViewBundle = [...bundles].sort((a, b) => Number(b.latest?.view_count || 0) - Number(a.latest?.view_count || 0))[0] || null;
+            const highestNegativeBundle = [...selectedBundles].sort((a, b) => {
+                const totalA = a.totalComments || 1;
+                const totalB = b.totalComments || 1;
+                return ((b.sentimentCounts['부정'] || 0) / totalB) - ((a.sentimentCounts['부정'] || 0) / totalA);
+            })[0] || null;
+            const topCategoryEntry = Object.entries(
+                selectedBundles.reduce((acc, bundle) => {
+                    Object.entries(bundle.categoryCounts).forEach(([category, counts]) => {
+                        acc[category] = (acc[category] || 0) + Object.values(counts).reduce((sum, value) => sum + value, 0);
+                    });
+                    return acc;
+                }, {})
+            ).sort((a, b) => b[1] - a[1])[0] || null;
+
+            return [
+                {
+                    label: '최근 게재 영상',
+                    value: latestBundle ? `${safeText(latestBundle.report.tab_label)} · ${formatDateOnly(latestBundle.report.video_start_at)}` : '-'
+                },
+                {
+                    label: '가장 높은 조회수',
+                    value: highestViewBundle ? `${safeText(highestViewBundle.report.tab_label)} ${formatNumber(highestViewBundle.latest?.view_count)}회` : '-'
+                },
+                {
+                    label: '선택 비교 중 부정 비중이 높은 프로그램',
+                    value: highestNegativeBundle ? `${safeText(highestNegativeBundle.report.tab_label)} · ${Math.round(((highestNegativeBundle.sentimentCounts['부정'] || 0) / Math.max(1, highestNegativeBundle.totalComments)) * 100)}%` : '-'
+                },
+                {
+                    label: '선택 비교에서 가장 많이 언급된 분류',
+                    value: topCategoryEntry ? `${topCategoryEntry[0]} · ${formatNumber(topCategoryEntry[1])}건` : '-'
+                }
+            ];
+        }
+
+        function prepareChartContainer(containerId) {
+            const element = document.getElementById(containerId);
+            if (!element) return null;
+            element.innerHTML = '';
+            return element;
+        }
+
+        function createMetricCard(label, value, footnote = '') {
+            return `
+                <div class="metric-card">
+                    <div class="metric-label">${label}</div>
+                    <div class="metric-value">${value}</div>
+                    <div class="metric-footnote">${footnote || '&nbsp;'}</div>
+                </div>
+            `;
+        }
+
+        function parseCsv(filePath) {
+            return new Promise((resolve, reject) => {
+                Papa.parse(`${filePath}?v=${Date.now()}`, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: results => resolve(results.data || []),
+                    error: error => reject(error)
+                });
+            });
+        }
+
+        function buildStatsSeries(statsRows, report) {
+            const rows = statsRows
+                .filter(row => row.timestamp)
+                .map(row => ({
+                    timestamp: row.timestamp,
+                    view_count: Number(row.view_count || 0),
+                    like_count: Number(row.like_count || 0),
+                    comment_count: Number(row.comment_count || 0),
+                    title: row.title || report.video_title
+                }))
+                .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+            if (report.video_start_at) {
+                const startRow = {
+                    timestamp: report.video_start_at,
+                    view_count: 0,
+                    like_count: 0,
+                    comment_count: 0,
+                    title: report.video_title
+                };
+                if (rows.length === 0 || rows[0].timestamp > report.video_start_at) {
+                    rows.unshift(startRow);
+                } else if (rows[0].timestamp === report.video_start_at) {
+                    rows[0] = { ...startRow, ...rows[0] };
+                }
+            }
+
+            return rows;
+        }
+
+        function buildCommentData(commentRows) {
+            const data = [];
+            const sentimentCounts = { '긍정': 0, '부정': 0, '중립': 0 };
+            const categoryCounts = {};
+
+            commentRows.forEach(row => {
+                if (!row.text || !row.sentiment) return;
+                if (row.sentiment === '광고' || row.keyword === '광고') return;
+
+                const sentiment = normalizeSentiment(row.sentiment);
+                if (!sentiment) return;
+
+                const category = normalizeCategory(row.category);
+                const item = {
+                    text: row.text,
+                    sentiment,
+                    category,
+                    keyword: row.keyword || '-'
+                };
+
+                data.push(item);
+                sentimentCounts[sentiment] += 1;
+                if (!categoryCounts[category]) {
+                    categoryCounts[category] = { '긍정': 0, '부정': 0, '중립': 0 };
+                }
+                categoryCounts[category][sentiment] += 1;
+            });
+
+            return { rows: data, sentimentCounts, categoryCounts };
+        }
+
+        function buildBundle(report, statsRows, commentRows) {
+            const stats = buildStatsSeries(statsRows, report);
+            const commentData = buildCommentData(commentRows);
+            const latest = stats[stats.length - 1] || null;
+            const totalComments = commentData.rows.length;
+            const dominantSentiment = sentimentOrder.reduce((best, key) => {
+                return commentData.sentimentCounts[key] > (commentData.sentimentCounts[best] || 0) ? key : best;
+            }, '긍정');
+
+            const topCategory = Object.keys(commentData.categoryCounts).sort((a, b) => {
+                const sumA = Object.values(commentData.categoryCounts[a]).reduce((acc, value) => acc + value, 0);
+                const sumB = Object.values(commentData.categoryCounts[b]).reduce((acc, value) => acc + value, 0);
+                return sumB - sumA;
+            })[0] || '-';
+
+            return {
+                report,
+                stats,
+                latest,
+                comments: commentData.rows,
+                sentimentCounts: commentData.sentimentCounts,
+                categoryCounts: commentData.categoryCounts,
+                totalComments,
+                dominantSentiment,
+                topCategory
+            };
+        }
+
+        function getLatestReportId(reports) {
+            if (!reports.length) return 'overview';
+
+            const sortedReports = [...reports].sort((reportA, reportB) => {
+                const valueA = reportA.video_start_at || reportA.start_date || '';
+                const valueB = reportB.video_start_at || reportB.start_date || '';
+                return valueB.localeCompare(valueA);
+            });
+
+            return sortedReports[0]?.id || 'overview';
+        }
+
+        async function loadDashboard() {
+            try {
+                const configResponse = await fetch(`dashboard_config.json?v=${Date.now()}`);
+                const config = await configResponse.json();
+                const reports = (config.reports || []).filter(report => report.enabled !== false);
+
+                const loadedBundles = await Promise.all(
+                    reports.map(async report => {
+                        const [statsRows, commentRows] = await Promise.all([
+                            parseCsv(`video_stats_${report.start_date}.csv`),
+                            parseCsv(`analyzed_comments_${report.start_date}.csv`)
+                        ]);
+                        return buildBundle(report, statsRows, commentRows);
+                    })
+                );
+
+                appState.config = config;
+                appState.reports = reports;
+                loadedBundles.forEach(bundle => appState.bundles.set(bundle.report.id, bundle));
+                initializeOverviewCompareIds();
+
+                document.title = config.dashboard_title || document.title;
+                document.getElementById('dashboardTitle').innerText = config.dashboard_title || document.title;
+
+                renderTabs();
+                renderOverview();
+
+                activateTab(getLatestReportId(reports));
+            } catch (error) {
+                console.error(error);
+                document.getElementById('overviewSection').innerHTML = `
+                    <div class="card-panel">
+                        <div class="panel-body">
+                            <div class="fw-bold text-danger mb-2">대시보드 데이터를 불러오지 못했습니다.</div>
+                            <div class="text-muted">dashboard_config.json 또는 CSV 파일 경로를 확인해 주세요.</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTabs() {
+            const html = [
+                `<button class="dashboard-tab" data-tab-id="overview">종합</button>`,
+                ...appState.reports.map(report => `<button class="dashboard-tab" data-tab-id="${report.id}">${report.tab_label || report.start_date}</button>`)
+            ].join('');
+
+            const container = document.getElementById('tabsContainer');
+            container.innerHTML = html;
+            container.querySelectorAll('.dashboard-tab').forEach(button => {
+                button.addEventListener('click', () => activateTab(button.dataset.tabId));
+            });
+        }
+
+        function activateTab(tabId) {
+            appState.activeTab = tabId;
+            document.querySelectorAll('.dashboard-tab').forEach(button => {
+                button.classList.toggle('active', button.dataset.tabId === tabId);
+            });
+
+            const overviewSection = document.getElementById('overviewSection');
+            const detailSection = document.getElementById('detailSection');
+
+            if (tabId === 'overview') {
+                overviewSection.classList.remove('d-none');
+                detailSection.classList.add('d-none');
+                renderOverview();
+                return;
+            }
+
+            overviewSection.classList.add('d-none');
+            detailSection.classList.remove('d-none');
+            renderDetail(tabId);
+        }
+
+        function renderOverview() {
+            const bundles = getSortedBundles();
+            const selectedBundles = getSelectedOverviewBundles();
+            const totalViews = bundles.reduce((acc, bundle) => acc + Number(bundle.latest?.view_count || 0), 0);
+            const totalComments = bundles.reduce((acc, bundle) => acc + bundle.totalComments, 0);
+            const latestUpdate = bundles
+                .map(bundle => bundle.latest?.timestamp)
+                .filter(Boolean)
+                .sort()
+                .slice(-1)[0] || '-';
+            const latestBundle = bundles[0] || null;
+            const insights = getExecutiveInsights(selectedBundles, bundles);
+
+            const overviewSection = document.getElementById('overviewSection');
+            overviewSection.innerHTML = `
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">${createMetricCard('대상 프로그램', `${bundles.length}개`, '현재 비교 중인 전체 프로그램 수')}</div>
+                    <div class="col-6 col-lg-3">${createMetricCard('누적 조회수', formatNumber(totalViews), '각 프로그램 최신 조회수 합계')}</div>
+                    <div class="col-6 col-lg-3">${createMetricCard('분석 댓글 수', formatNumber(totalComments), '광고성 댓글 제외 기준')}</div>
+                    <div class="col-6 col-lg-3">${createMetricCard('최근 업데이트', latestUpdate, '가장 최근 수집 시각 기준')}</div>
+                </div>
+
+                <div class="card-panel">
+                    <div class="panel-body">
+                        <div class="overview-toolbar">
+                            <div class="overview-toolbar-copy">
+                                <div class="eyebrow">Overview</div>
+                                <h3 class="overview-toolbar-title">종합 현황</h3>
+                                <p class="overview-toolbar-text">최신 프로그램을 중심으로 전체 흐름을 살펴보고, 필요한 대상만 골라 비교할 수 있도록 정리했습니다. 현재 첫 화면은 최신 영상 분석 탭으로 유지되며, 종합 탭에서는 전체 프로그램의 위치와 차이를 빠르게 확인할 수 있습니다.</p>
+                            </div>
+                            <div class="compare-selector">
+                                <h4 class="compare-selector-title">비교 대상 선택</h4>
+                                <p class="compare-selector-copy">종합 차트에는 선택한 프로그램만 반영됩니다. 최근 프로그램 3개를 기본으로 두고, 최대 4개까지 비교할 수 있습니다.</p>
+                                <div class="compare-chip-wrap">
+                                    ${bundles.map(bundle => `
+                                        <button type="button" class="compare-chip ${selectedBundles.some(item => item.report.id === bundle.report.id) ? 'active' : ''}" data-compare-id="${bundle.report.id}">
+                                            ${safeText(bundle.report.tab_label)}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                                <div class="compare-selector-note">현재 선택: ${selectedBundles.map(bundle => safeText(bundle.report.tab_label)).join(', ') || '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-8">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">프로그램 목록</h3>
+                                <p class="panel-subtitle">주요 지표와 우세 감성을 기준으로 프로그램별 현황을 정리했습니다.</p>
+                            </div>
+                            <div class="panel-body pt-0">
+                                ${isMobile ? `
+                                    <div>
+                                        ${bundles.map(bundle => renderOverviewListCard(bundle)).join('')}
+                                    </div>
+                                ` : `
+                                    <div class="table-responsive">
+                                        <table class="table align-middle mb-0 overview-list-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>프로그램</th>
+                                                    <th>게재일</th>
+                                                    <th>조회수</th>
+                                                    <th>댓글</th>
+                                                    <th>분석수</th>
+                                                    <th>우세감성</th>
+                                                    <th>대표분류</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${bundles.map(bundle => `
+                                                    <tr data-report-id="${bundle.report.id}">
+                                                        <td class="fw-bold">${safeText(bundle.report.tab_label)}</td>
+                                                        <td>${formatDateOnly(bundle.report.video_start_at)}</td>
+                                                        <td>${formatNumber(bundle.latest?.view_count)}</td>
+                                                        <td>${formatNumber(bundle.latest?.comment_count)}</td>
+                                                        <td>${formatNumber(bundle.totalComments)}</td>
+                                                        <td><span class="sentiment-badge ${getSentimentClass(bundle.dominantSentiment)}">${bundle.dominantSentiment}</span></td>
+                                                        <td>${safeText(bundle.topCategory)}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">비교 관찰 포인트</h3>
+                                <p class="panel-subtitle">선택한 프로그램과 최신 현황을 기준으로 우선 확인할 지점을 정리했습니다.</p>
+                            </div>
+                            <div class="panel-body">
+                                <div class="executive-note">
+                                    <h4 class="executive-note-title">${latestBundle ? `${safeText(latestBundle.report.tab_label)}가 최신 게재 프로그램입니다.` : '비교 요약'}</h4>
+                                    <p class="executive-note-copy">종합 탭은 전체 현황을 빠르게 파악한 뒤, 아래 차트에서 선택 프로그램 간 차이를 바로 확인할 수 있도록 구성했습니다.</p>
+                                    <div class="executive-note-list">
+                                        ${insights.map(item => `
+                                            <div class="executive-note-item">
+                                                <div class="executive-note-label">${item.label}</div>
+                                                <div class="executive-note-value">${safeText(item.value)}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-5">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">감성 분포 비교</h3>
+                                <p class="panel-subtitle">선택한 프로그램의 긍정·부정·중립 비중을 동일 기준에서 비교합니다.</p>
+                            </div>
+                            <div class="panel-body">
+                                <div id="overviewSentimentChart" class="chart-container short"><div class="empty-msg">차트 로딩 중...</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-7">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">분류별 여론 비교</h3>
+                                <p class="panel-subtitle">선택한 프로그램에서 어떤 주제가 부각되는지 분류별 반응 차이로 보여줍니다.</p>
+                            </div>
+                            <div class="panel-body">
+                                <div id="overviewCategoryChart" class="chart-container category-overview-chart"><div class="empty-msg">차트 로딩 중...</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.querySelectorAll('[data-compare-id]').forEach(button => {
+                button.addEventListener('click', () => toggleOverviewCompareId(button.dataset.compareId));
+            });
+
+            document.querySelectorAll('[data-report-id]').forEach(row => {
+                row.addEventListener('click', () => activateTab(row.dataset.reportId));
+            });
+
+            renderOverviewCharts();
+        }
+
+        function renderOverviewListCard(bundle) {
+            return `
+                <div class="overview-list-card" data-report-id="${bundle.report.id}">
+                    <div class="overview-list-header">
+                        <div>
+                            <div class="badge-soft mb-2">${safeText(bundle.report.tab_label)}</div>
+                            <div class="overview-list-title">${safeText(bundle.report.video_title)}</div>
+                        </div>
+                        <span class="sentiment-badge ${getSentimentClass(bundle.dominantSentiment)}">${bundle.dominantSentiment}</span>
+                    </div>
+                    <div class="overview-list-meta">
+                        <div>
+                            <div class="meta-label">게재일</div>
+                            <div class="meta-value">${formatDateOnly(bundle.report.video_start_at)}</div>
+                        </div>
+                        <div>
+                            <div class="meta-label">조회수</div>
+                            <div class="meta-value">${formatNumber(bundle.latest?.view_count)}</div>
+                        </div>
+                        <div>
+                            <div class="meta-label">댓글</div>
+                            <div class="meta-value">${formatNumber(bundle.latest?.comment_count)}</div>
+                        </div>
+                        <div>
+                            <div class="meta-label">분석수</div>
+                            <div class="meta-value">${formatNumber(bundle.totalComments)}</div>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <div class="meta-label">대표분류</div>
+                            <div class="meta-value">${safeText(bundle.topCategory)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOverviewCharts() {
+            const bundles = getSelectedOverviewBundles();
+            prepareChartContainer('overviewSentimentChart');
+            prepareChartContainer('overviewCategoryChart');
+
+            const labels = bundles.map(bundle => bundle.report.tab_label || bundle.report.start_date);
+            const sentimentTraces = sentimentOrder.map(sentiment => ({
+                x: labels,
+                y: bundles.map(bundle => {
+                    const total = bundle.totalComments || 0;
+                    const count = bundle.sentimentCounts[sentiment] || 0;
+                    return total ? Math.round((count / total) * 1000) / 10 : 0;
+                }),
+                customdata: bundles.map(bundle => {
+                    const total = bundle.totalComments || 0;
+                    return [bundle.sentimentCounts[sentiment] || 0, total];
+                }),
+                type: 'bar',
+                name: sentiment,
+                marker: { color: colorMap[sentiment] },
+                hovertemplate: '%{x}<br>' + sentiment + ': %{customdata[0]}건 (%{y}%)<br>전체: %{customdata[1]}건<extra></extra>'
+            }));
+
+            Plotly.newPlot('overviewSentimentChart', sentimentTraces, {
+                barmode: 'stack',
+                barnorm: 'percent',
+                margin: { t: 20, b: 70, l: 48, r: 12 },
+                xaxis: { tickfont: { size: chartFontSize }, tickangle: isMobile ? -18 : 0 },
+                yaxis: { title: '비중(%)', range: [0, 100], tickfont: { size: chartFontSize }, ticksuffix: '%' },
+                legend: { orientation: 'h', y: -0.16, x: 0.5, xanchor: 'center', traceorder: 'normal' }
+            }, configOptions);
+
+            const categories = sortCategories(
+                categoryOrder.filter(category => bundles.some(bundle => {
+                    const counts = bundle.categoryCounts[category] || {};
+                    return Object.values(counts).reduce((acc, value) => acc + value, 0) > 0;
+                }))
+            );
+
+            const rowHeight = bundles.length <= 2 ? 0.36 : 0.24;
+            const rowGap = bundles.length <= 2 ? 0.06 : 0.04;
+            const totalHeight = bundles.length * rowHeight + Math.max(0, bundles.length - 1) * rowGap;
+            const topPadding = Math.max(0.015, (1 - totalHeight) / 2);
+            const categoryTraces = [];
+            const axisLayout = {};
+            const annotations = [];
+            const shapes = [];
+
+            bundles.forEach((bundle, index) => {
+                const axisSuffix = index === 0 ? '' : String(index + 1);
+                const xAxisName = getAxisName('x', index);
+                const yAxisName = getAxisName('y', index);
+                const domainEnd = 1 - topPadding - index * (rowHeight + rowGap);
+                const domainStart = Math.max(0, domainEnd - rowHeight);
+
+                sentimentOrder.forEach(sentiment => {
+                    categoryTraces.push({
+                        x: categories,
+                        y: categories.map(category => (bundle.categoryCounts[category] || {})[sentiment] || 0),
+                        type: 'bar',
+                        name: sentiment,
+                        marker: { color: colorMap[sentiment] },
+                        xaxis: xAxisName,
+                        yaxis: yAxisName,
+                        showlegend: index === 0,
+                        hovertemplate: `${bundle.report.tab_label || bundle.report.start_date}<br>%{x}<br>${sentiment}: %{y}건<extra></extra>`
+                    });
+                });
+
+                axisLayout[`xaxis${axisSuffix}`] = {
+                    domain: [0.08, 0.995],
+                    anchor: yAxisName,
+                    tickangle: isMobile ? -28 : -16,
+                    tickfont: { size: chartFontSize },
+                    showgrid: false,
+                    showticklabels: index === bundles.length - 1,
+                    automargin: true
+                };
+                axisLayout[`yaxis${axisSuffix}`] = {
+                    domain: [domainStart, domainEnd],
+                    anchor: xAxisName,
+                    tickfont: { size: chartFontSize },
+                    rangemode: 'tozero',
+                    gridcolor: 'rgba(148, 163, 184, 0.22)',
+                    zerolinecolor: 'rgba(148, 163, 184, 0.32)',
+                    title: { text: '', standoff: 0 },
+                    automargin: true
+                };
+
+                annotations.push({
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: 0.028,
+                    y: (domainStart + domainEnd) / 2,
+                    text: `<b>${safeText(bundle.report.tab_label)}</b>`,
+                    showarrow: false,
+                    xanchor: 'center',
+                    yanchor: 'middle',
+                    align: 'left',
+                    textangle: -90,
+                    font: { size: isMobile ? 11 : 12, color: '#334155' }
+                });
+
+                if (index < bundles.length - 1) {
+                    shapes.push({
+                        type: 'line',
+                        xref: 'paper',
+                        yref: 'paper',
+                        x0: 0.08,
+                        x1: 0.995,
+                        y0: domainStart - (rowGap / 2),
+                        y1: domainStart - (rowGap / 2),
+                        line: { color: 'rgba(148, 163, 184, 0.28)', width: 1 }
+                    });
+                }
+            });
+
+            Plotly.newPlot('overviewCategoryChart', categoryTraces, {
+                barmode: 'stack',
+                margin: { t: 10, b: 84, l: 6, r: 8 },
+                legend: { orientation: 'h', y: -0.12, x: 0.5, xanchor: 'center', traceorder: 'normal' },
+                annotations,
+                shapes,
+                ...axisLayout
+            }, configOptions);
+        }
+
+        function renderDetail(reportId) {
+            const bundle = appState.bundles.get(reportId);
+            if (!bundle) return;
+
+            const report = bundle.report;
+            const detailSection = document.getElementById('detailSection');
+            const urlHtml = report.video_url
+                ? `<a class="video-link" href="${report.video_url}" target="_blank">유튜브 영상 열기</a>`
+                : `<span class="text-muted">유튜브 URL 미등록</span>`;
+
+            detailSection.innerHTML = `
+                <div class="card-panel">
+                    <div class="panel-body">
+                        <div class="detail-hero">
+                            <div>
+                                <div class="badge-soft mb-3">${safeText(report.tab_label)} · ${safeText(report.start_date)}</div>
+                                <div class="detail-title">${safeText(report.video_title)}</div>
+                                <div class="meta-list">
+                                    <div class="meta-line"><strong>영상 게재 시점</strong>${formatDateTime(report.video_start_at)}</div>
+                                    <div class="meta-line"><strong>최종 업데이트</strong>${formatDateTime(bundle.latest?.timestamp)}</div>
+                                    <div class="meta-line"><strong>링크</strong>${urlHtml}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3">${createMetricCard('조회수', formatNumber(bundle.latest?.view_count), '가장 최근 수집 기준')}</div>
+                    <div class="col-6 col-lg-3">${createMetricCard('좋아요', formatNumber(bundle.latest?.like_count), '가장 최근 수집 기준')}</div>
+                    <div class="col-6 col-lg-3">${createMetricCard('댓글 수', formatNumber(bundle.latest?.comment_count), '유튜브 통계 기준')}</div>
+                    <div class="col-6 col-lg-3">${createMetricCard('분석 댓글 수', formatNumber(bundle.totalComments), bundle.totalComments < 10 ? '표본 수가 적습니다.' : '광고 제외 기준')}</div>
+                </div>
+
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">시간대별 누적 조회수 추이</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="detailViewChart" class="chart-container"><div class="empty-msg">차트 로딩 중...</div></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-5">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">전체 감성 분포</h3>
+                                <p class="panel-subtitle">광고성 댓글을 제외한 감성 분포를 보여줍니다.</p>
+                            </div>
+                            <div class="panel-body">
+                                <div id="detailSentimentChart" class="chart-container short"><div class="empty-msg">차트 로딩 중...</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-7">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">분류별 여론</h3>
+                                <p class="panel-subtitle">주요 분류별 댓글 반응을 감성 기준으로 나누어 보여줍니다.</p>
+                            </div>
+                            <div class="panel-body">
+                                <div id="detailCategoryChart" class="chart-container short"><div class="empty-msg">차트 로딩 중...</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h3 class="panel-title">전체 분석 데이터</h3>
+                        </div>
+                        <div class="badge-soft">총 ${formatNumber(bundle.totalComments)}건</div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="table table-hover align-middle mb-0 detail-data-table" id="detailDataTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable col-sentiment" data-index="0" style="padding-left: 1.25rem;">감성 <span class="sort-icon">↕</span></th>
+                                    <th class="sortable col-category" data-index="1">분류 <span class="sort-icon">↕</span></th>
+                                    <th class="sortable col-keyword" data-index="2">키워드 <span class="sort-icon">↕</span></th>
+                                    <th>댓글 내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${bundle.comments.slice().reverse().map(row => `
+                                    <tr>
+                                        <td class="col-sentiment" style="padding-left: 1.25rem;"><span class="sentiment-badge ${getSentimentClass(row.sentiment)}">${row.sentiment}</span></td>
+                                        <td><span class="badge text-bg-secondary">${safeText(row.category)}</span></td>
+                                        <td class="fw-bold">${safeText(row.keyword)}</td>
+                                        <td class="small comment-cell">${safeText(row.text)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            renderDetailCharts(bundle);
+            attachTableSorting();
+        }
+
+        function renderDetailCharts(bundle) {
+            prepareChartContainer('detailViewChart');
+            prepareChartContainer('detailSentimentChart');
+            prepareChartContainer('detailCategoryChart');
+
+            Plotly.newPlot('detailViewChart', [{
+                x: bundle.stats.map(row => row.timestamp),
+                y: bundle.stats.map(row => row.view_count),
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#185ABD', width: 3, shape: 'spline' },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(24, 90, 189, 0.08)'
+            }], {
+                margin: { t: 20, b: 50, l: 58, r: 16 },
+                xaxis: { tickfont: { size: chartFontSize } },
+                yaxis: { tickfont: { size: chartFontSize } }
+            }, configOptions);
+
+            const sentimentValues = sentimentOrder.map(key => bundle.sentimentCounts[key] || 0).filter(value => value > 0);
+            const sentimentLabels = sentimentOrder.filter(key => (bundle.sentimentCounts[key] || 0) > 0);
+
+            Plotly.newPlot('detailSentimentChart', [{
+                values: sentimentValues.length ? sentimentValues : [1],
+                labels: sentimentLabels.length ? sentimentLabels : ['데이터 없음'],
+                type: 'pie',
+                hole: 0.5,
+                marker: { colors: sentimentLabels.map(label => colorMap[label]) },
+                sort: false
+            }], {
+                margin: { t: 20, b: 20, l: 20, r: 20 },
+                showlegend: true,
+                legend: { orientation: 'h', y: -0.12, x: 0.5, xanchor: 'center', traceorder: 'normal' }
+            }, configOptions);
+
+            const categories = Object.keys(bundle.categoryCounts)
+                .filter(category => {
+                    const total = Object.values(bundle.categoryCounts[category] || {}).reduce((acc, value) => acc + value, 0);
+                    return total > 0;
+                })
+                .sort((a, b) => {
+                    const totalA = Object.values(bundle.categoryCounts[a] || {}).reduce((acc, value) => acc + value, 0);
+                    const totalB = Object.values(bundle.categoryCounts[b] || {}).reduce((acc, value) => acc + value, 0);
+                    if (totalB !== totalA) return totalB - totalA;
+                    return sortCategories([a, b])[0] === a ? -1 : 1;
+                });
+
+            const traces = sentimentOrder.map(sentiment => ({
+                x: categories.map(category => (bundle.categoryCounts[category] || {})[sentiment] || 0),
+                y: categories,
+                type: 'bar',
+                orientation: 'h',
+                name: sentiment,
+                marker: { color: colorMap[sentiment] }
+            }));
+
+            Plotly.newPlot('detailCategoryChart', traces, {
+                barmode: 'stack',
+                margin: { t: 20, b: 70, l: 110, r: 12 },
+                xaxis: { tickfont: { size: chartFontSize } },
+                yaxis: { tickfont: { size: chartFontSize }, autorange: 'reversed' },
+                legend: { orientation: 'h', y: -0.22, x: 0.5, xanchor: 'center', traceorder: 'normal' }
+            }, configOptions);
+        }
+
+        function attachTableSorting() {
+            document.querySelectorAll('#detailDataTable th.sortable').forEach(header => {
+                header.addEventListener('click', () => {
+                    const table = header.closest('table');
+                    const tableBody = table.querySelector('tbody');
+                    const rows = Array.from(tableBody.querySelectorAll('tr'));
+                    const index = Number(header.dataset.index);
+                    const isAsc = header.classList.contains('asc');
+
+                    rows.sort((rowA, rowB) => {
+                        const valueA = rowA.children[index].innerText.trim();
+                        const valueB = rowB.children[index].innerText.trim();
+                        return isAsc ? valueB.localeCompare(valueA) : valueA.localeCompare(valueB);
+                    });
+
+                    table.querySelectorAll('th.sortable').forEach(th => {
+                        th.classList.remove('asc', 'desc');
+                        th.querySelector('.sort-icon').innerText = '↕';
+                    });
+
+                    header.classList.toggle('asc', !isAsc);
+                    header.classList.toggle('desc', isAsc);
+                    header.querySelector('.sort-icon').innerText = isAsc ? '↑' : '↓';
+
+                    tableBody.innerHTML = '';
+                    rows.forEach(row => tableBody.appendChild(row));
+                });
+            });
+        }
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>

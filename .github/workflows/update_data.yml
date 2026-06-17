@@ -1,0 +1,47 @@
+name: Auto Update YouTube PR Data
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '*/15 * * * *'  # 15분마다 실행 (Vercel 자동 재배포 일일 한도 고려)
+  workflow_dispatch:        # GitHub에서 수동 버튼 클릭으로도 실행 가능
+
+jobs:
+  update-dashboard-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v3
+        
+      - name: 파이썬 환경 설정
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: 필요 라이브러리 설치
+        run: |
+          pip install -r requirements.txt
+          
+      - name: 데이터 업데이트 및 결과 저장
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: openai/gpt-4o-mini
+          OPENROUTER_BATCH_SIZE: 10
+          OPENROUTER_TIMEOUT: 60
+          TZ: Asia/Seoul
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 1. 최신 코드 가져오기
+          git pull --rebase origin main
+          
+          # 2. 데이터 업데이트 스크립트 실행
+          python update_job.py
+          
+          # 3. 결과 저장
+          git add analyzed_comments_*.csv video_stats_*.csv dashboard_config.json prompt_*.txt
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update data" && git push)

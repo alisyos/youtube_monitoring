@@ -1,0 +1,7 @@
+*.py
+__pycache__/
+*.py[cod]
+.github/
+.devcontainer/
+.env
+requirements.txt

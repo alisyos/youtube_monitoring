@@ -1,0 +1,40 @@
+{
+  "dashboard_title": "국민연금 이사장 유튜브 여론 모니터링",
+  "default_report_id": "sampro_ceo_ep1_20260423",
+  "default_prompt_file": "prompt_base.txt",
+  "reports": [
+    {
+      "id": "the_people_20260214",
+      "tab_label": "삼프로TV",
+      "video_title": "최대 큰손 국민연금, 본격 코스닥 투자 임박? | 김성주 국민연금공단 이사장 [더 피플]",
+      "video_url": "https://youtu.be/fNHLffyXnQM?si=RpMYiECR4H0xm9Es",
+      "start_date": "20260214",
+      "video_start_at": "2026-02-14 08:00:00",
+      "prompt_file": "prompt_20260214.txt",
+      "enabled": true,
+      "collect_enabled": true
+    },
+    {
+      "id": "future_scenario_shorts_20260220",
+      "tab_label": "전북CBS 라디오X",
+      "video_title": "21세기 말까지 기금 소진 걱정 끝, 김성주 이사장이 밝힌 1400조 국민연금의 미래 시나리오",
+      "video_url": "https://www.youtube.com/watch?v=_xfMI9Lwm4U",
+      "start_date": "20260220",
+      "video_start_at": "2026-02-20 17:30:00",
+      "prompt_file": "prompt_20260220.txt",
+      "enabled": true,
+      "collect_enabled": true
+    },
+    {
+      "id": "sampro_ceo_ep1_20260423",
+      "tab_label": "지식인사이드",
+      "video_title": "골드만삭스도 한 수 배우고 간 국민연금 '역대급' 수익률 비결ㅣ지식인초대석: CEO EP.1 (김성주 이사장)",
+      "video_url": "https://youtu.be/EBLo0C-sj2w?si=3OzV4KhNnKvKrspb",
+      "start_date": "20260423",
+      "video_start_at": "2026-04-23 19:00:00",
+      "prompt_file": "prompt_20260423.txt",
+      "enabled": true,
+      "collect_enabled": true
+    }
+  ]
+}
