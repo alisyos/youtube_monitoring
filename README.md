@@ -51,15 +51,26 @@
 - `enabled`: 대시보드에 표시할지 여부
 - `collect_enabled`: GitHub Actions 수집 대상 포함 여부
 
-## 새 영상 추가 방법
+## 프로그램(영상) 추가 / 삭제
+
+### 방법 1: 대시보드에서 직접 (권장)
+
+대시보드 우측 상단 **"프로그램 관리"** 버튼으로 추가·삭제할 수 있습니다.
+
+- **추가**: 관리자 비밀번호 + YouTube URL + 탭 이름만 입력하면 됩니다. 영상 제목은 자동으로
+  채워지고, `start_date`/`video_start_at`도 자동 설정됩니다. 추가 직후 수집이 트리거되어 보통
+  1~2분 내 데이터가 채워집니다. (수집 전까지 새 탭은 빈 상태로 표시됩니다.)
+- **삭제**: 목록에서 "삭제"를 누르면 `dashboard_config.json`에서 항목이 제거됩니다. 이미 수집된
+  CSV 파일은 저장소에 그대로 보존됩니다.
+
+내부적으로 [api/programs.js](api/programs.js) 서버리스 함수가 비밀번호를 검증하고 GitHub
+Contents API로 `dashboard_config.json`을 커밋합니다. 비밀번호는 Vercel 환경변수
+`ADMIN_PASSWORD`로 관리합니다(아래 참고).
+
+### 방법 2: 설정 파일 직접 편집
 
 1. [dashboard_config.json](dashboard_config.json)에 `reports` 항목을 추가합니다.
-2. 아래 값을 채웁니다.
-   - `video_url`
-   - `tab_label`
-   - `video_title`
-   - `start_date`
-   - `video_start_at`
+2. 아래 값을 채웁니다: `video_url`, `tab_label`, `video_title`, `start_date`, `video_start_at`
 3. 프롬프트가 기존 영상들과 크게 다르지 않으면 `prompt_file`을 생략하고 `prompt_base.txt`를 그대로 사용합니다.
 4. 영상별 분류 기준이 필요하면 `prompt_<start_date>.txt`를 새로 만들고 `prompt_file`에 연결합니다.
 5. `collect_enabled: true`로 두면 GitHub Actions가 다음 실행부터 자동 수집합니다.
@@ -137,10 +148,11 @@ python reanalyze_existing_comments.py --report-id sampro_ceo_ep1_20260423
 
 `api/deploy.js`가 GitHub 워크플로를 트리거할 때 사용합니다.
 
-- `GH_DISPATCH_TOKEN` — GitHub Personal Access Token. classic은 `repo` 스코프, fine-grained는 대상 저장소의 `Contents: Read and write` 권한 필요.
+- `GH_DISPATCH_TOKEN` — GitHub Personal Access Token. classic은 `repo` 스코프, fine-grained는 대상 저장소의 `Contents: Read and write` 권한 필요. (수동 업데이트 버튼과 프로그램 추가/삭제 양쪽에서 사용)
+- `ADMIN_PASSWORD` — "프로그램 관리"(추가/삭제) 기능의 관리자 비밀번호. 미설정 시 관리 기능이 비활성(401)됩니다.
 - `GH_REPO` *(선택)* — 기본값 `alisyos/youtube_monitoring`.
 
-설정 예: `vercel env add GH_DISPATCH_TOKEN production`
+설정 예: `vercel env add GH_DISPATCH_TOKEN production` / `vercel env add ADMIN_PASSWORD production`
 
 ## 참고
 

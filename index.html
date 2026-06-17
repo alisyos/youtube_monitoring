@@ -768,6 +768,155 @@
             opacity: 0.7;
             cursor: default;
         }
+
+        .hero-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1050;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(16, 63, 135, 0.25);
+        }
+
+        .modal-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .modal-box-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .modal-close {
+            border: none;
+            background: none;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+
+        .modal-box-body {
+            padding: 20px 22px;
+        }
+
+        .modal-section-title {
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin: 10px 0 4px;
+        }
+
+        .field-input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 0.92rem;
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-primary-solid {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 14px;
+        }
+
+        .btn-primary-solid:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .program-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .program-row .name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .program-row .sub {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .btn-delete {
+            border: 1px solid #fca5a5;
+            background: #fff;
+            color: #dc2626;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-delete:hover {
+            background: #fef2f2;
+        }
+
+        .modal-hint {
+            font-size: 0.85rem;
+            margin-top: 12px;
+            min-height: 1.2em;
+        }
+
+        .modal-divider {
+            border: none;
+            border-top: 1px solid var(--line);
+            margin: 22px 0 4px;
+        }
     </style>
 </head>
 
@@ -776,7 +925,10 @@
         <header class="hero">
             <div class="hero-panel has-actions">
                 <div class="hero-title" id="dashboardTitle">국민연금 이사장 유튜브 여론 모니터링</div>
-                <button id="manualDeployBtn" class="btn-refresh" type="button">수동 업데이트</button>
+                <div class="hero-actions">
+                    <button id="manageProgramsBtn" class="btn-refresh" type="button">프로그램 관리</button>
+                    <button id="manualDeployBtn" class="btn-refresh" type="button">수동 업데이트</button>
+                </div>
             </div>
         </header>
 
@@ -797,6 +949,34 @@
                 </div>
             </div>
         </footer>
+    </div>
+
+    <div class="modal-overlay" id="manageProgramsModal">
+        <div class="modal-box">
+            <div class="modal-box-header">
+                <h3>프로그램 관리</h3>
+                <button type="button" class="modal-close" id="manageProgramsClose" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-box-body">
+                <label class="field-label" for="adminPassword">관리자 비밀번호</label>
+                <input type="password" class="field-input" id="adminPassword" placeholder="비밀번호" autocomplete="current-password">
+
+                <hr class="modal-divider">
+
+                <div class="modal-section-title">프로그램 추가</div>
+                <label class="field-label" for="newVideoUrl">YouTube URL</label>
+                <input type="text" class="field-input" id="newVideoUrl" placeholder="https://youtu.be/...">
+                <label class="field-label" for="newTabLabel">탭 이름</label>
+                <input type="text" class="field-input" id="newTabLabel" placeholder="예: 삼프로TV">
+                <button type="button" class="btn-primary-solid" id="addProgramBtn">추가</button>
+                <div class="modal-hint text-muted" id="addProgramHint"></div>
+
+                <hr class="modal-divider">
+
+                <div class="modal-section-title">현재 프로그램</div>
+                <div id="programList"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1087,9 +1267,11 @@
 
                 const loadedBundles = await Promise.all(
                     reports.map(async report => {
+                        // 신규 프로그램은 CSV가 아직 없을 수 있다. 개별 실패를 흡수해
+                        // 빈 데이터로 처리하면 해당 탭만 비고 대시보드 전체는 정상 동작한다.
                         const [statsRows, commentRows] = await Promise.all([
-                            parseCsv(`video_stats_${report.start_date}.csv`),
-                            parseCsv(`analyzed_comments_${report.start_date}.csv`)
+                            parseCsv(`video_stats_${report.start_date}.csv`).catch(() => []),
+                            parseCsv(`analyzed_comments_${report.start_date}.csv`).catch(() => [])
                         ]);
                         return buildBundle(report, statsRows, commentRows);
                     })
@@ -1685,6 +1867,104 @@
         }
 
         document.getElementById('manualDeployBtn').addEventListener('click', handleManualDeploy);
+
+        // ===== 프로그램 관리 (추가/삭제) =====
+        function openManageModal() {
+            renderProgramList();
+            document.getElementById('addProgramHint').innerText = '';
+            document.getElementById('manageProgramsModal').classList.add('open');
+        }
+
+        function closeManageModal() {
+            document.getElementById('manageProgramsModal').classList.remove('open');
+        }
+
+        function renderProgramList() {
+            const container = document.getElementById('programList');
+            const reports = (appState.config?.reports) || appState.reports || [];
+            if (!reports.length) {
+                container.innerHTML = '<div class="text-muted">등록된 프로그램이 없습니다.</div>';
+                return;
+            }
+            container.innerHTML = reports.map(r => `
+                <div class="program-row">
+                    <div>
+                        <div class="name">${safeText(r.tab_label || r.id)}</div>
+                        <div class="sub">${safeText(r.start_date)} · ${safeText((r.video_title || '').slice(0, 40))}</div>
+                    </div>
+                    <button type="button" class="btn-delete" data-delete-id="${r.id}">삭제</button>
+                </div>
+            `).join('');
+            container.querySelectorAll('[data-delete-id]').forEach(btn => {
+                btn.addEventListener('click', () => handleDeleteProgram(btn.dataset.deleteId, btn));
+            });
+        }
+
+        async function handleAddProgram() {
+            const btn = document.getElementById('addProgramBtn');
+            const hint = document.getElementById('addProgramHint');
+            const password = document.getElementById('adminPassword').value;
+            const video_url = document.getElementById('newVideoUrl').value.trim();
+            const tab_label = document.getElementById('newTabLabel').value.trim();
+
+            if (!password) { hint.innerText = '비밀번호를 입력하세요.'; return; }
+            if (!video_url || !tab_label) { hint.innerText = 'URL과 탭 이름을 모두 입력하세요.'; return; }
+
+            btn.disabled = true;
+            hint.innerText = '추가 중…';
+            try {
+                const res = await fetch('/api/programs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'add', password, video_url, tab_label })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || `오류 (HTTP ${res.status})`);
+                hint.innerText = '추가됨 ✓ 데이터는 1~2분 후 반영됩니다.';
+                document.getElementById('newVideoUrl').value = '';
+                document.getElementById('newTabLabel').value = '';
+                await loadDashboard();
+                renderProgramList();
+            } catch (error) {
+                console.error(error);
+                hint.innerText = '추가 실패: ' + error.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function handleDeleteProgram(id, btn) {
+            const hint = document.getElementById('addProgramHint');
+            const password = document.getElementById('adminPassword').value;
+            if (!password) { hint.innerText = '비밀번호를 입력하세요.'; return; }
+            if (!confirm('이 프로그램을 목록에서 삭제할까요? (수집된 데이터 파일은 보존됩니다)')) return;
+
+            if (btn) btn.disabled = true;
+            hint.innerText = '삭제 중…';
+            try {
+                const res = await fetch('/api/programs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', password, id })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || `오류 (HTTP ${res.status})`);
+                hint.innerText = '삭제됨 ✓';
+                await loadDashboard();
+                renderProgramList();
+            } catch (error) {
+                console.error(error);
+                hint.innerText = '삭제 실패: ' + error.message;
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        document.getElementById('manageProgramsBtn').addEventListener('click', openManageModal);
+        document.getElementById('manageProgramsClose').addEventListener('click', closeManageModal);
+        document.getElementById('manageProgramsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'manageProgramsModal') closeManageModal();
+        });
+        document.getElementById('addProgramBtn').addEventListener('click', handleAddProgram);
 
         loadDashboard();
     </script>
